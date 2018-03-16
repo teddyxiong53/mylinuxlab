@@ -65,8 +65,11 @@ boot-uboot:
 boot:
 	$(ROOT_DIR)/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
-	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage \
-	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
+	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb 
+	
+
+
 
 clean:
 	@echo "clean"
