@@ -1,7 +1,7 @@
 .PHONY: help uboot uboot-menuconfig uboot-defconfig \
 	kernel kernel-menuconfig kernel-defconfig \
-	busybox rootfs boot clean pflash initrd boot-uboot \
-	ramfs
+	busybox  boot clean  boot-uboot \
+	ramfs busybox-install
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -20,7 +20,7 @@ export ARCH CROSS_COMPILE
 default: help
 
 help:
-	cat readme.txt
+	cat help.txt
 	@echo ""
     
 uboot-menuconfig:
@@ -44,24 +44,16 @@ busybox-menuconfig:
 	make -C $(BUSYBOX_DIR) menuconfig
 
 busybox-defconfig:
-	make -C $(BUSYBOX_DIR)defconfig
+	make -C $(BUSYBOX_DIR) defconfig
 busybox:
 	make -C $(BUSYBOX_DIR) -j4
+busybox-install:
+	make -C $(BUSYBOX_DIR) install CONFIG_PREFIX=$(ROOT_DIR)/ramfs
 
-rootfs:
 	
 ramfs:
 	cd $(KERNEL_DIR); ./scripts/gen_initramfs_list.sh -o $(ROOT_DIR)/ramfs.gz $(ROOT_DIR)/ramfs;cd -
 
-
-KERNEL_IMAGE=$(ROOT_DIR)/kernel/linux-stable/arch/arm/boot/uImage
-PFLASH_IMG=$(ROOT_DIR)/pflash.img
-PFLASH_BS=512
-PFLASH_BASE = 0x40000000
-PFLASH_SIZE = 64
-PFLASH_SEC_COUNT:=128
-ROOT_IMAGE=$(ROOT_DIR)/ramdisk.img.uboot
-DTB_IMAGE=$(ROOT_DIR)/kernel/linux-stable/arch/arm/boot/dts/vexpress-v2p-ca9.dtb
 
 
 boot-uboot:
