@@ -65,7 +65,7 @@ boot-uboot:
 boot:
 	qemu-system-arm -M vexpress-a9 \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage \
-	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb
+	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
 
 clean:
 	@echo "clean"
