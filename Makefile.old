@@ -1,7 +1,7 @@
 .PHONY: help uboot uboot-menuconfig uboot-defconfig \
 	kernel kernel-menuconfig kernel-defconfig \
-	busybox rootfs boot clean pflash initrd boot-uboot \
-	ramfs
+	busybox rootfs boot clean pflash initrd boot-kernel
+
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -49,9 +49,10 @@ busybox:
 	make -C $(BUSYBOX_DIR) -j4
 
 rootfs:
-	
-ramfs:
-	cd $(KERNEL_DIR); ./scripts/gen_initramfs_list.sh -o $(ROOT_DIR)/ramfs.gz $(ROOT_DIR)/ramfs;cd -
+	#make -C busybox/busybox-1.27.2 install CONFIG_PREFIX=$(ROOT_DIR)/rootfs
+	sudo chmod 666 $(ROOT_DIR)/rootfs_origin/dev/ram0 
+	sudo cp $(ROOT_DIR)/rootfs_origin/* $(ROOT_DIR)/rootfs -rf
+	sudo chmod 666 $(ROOT_DIR)/rootfs/dev/ram0 
 
 
 KERNEL_IMAGE=$(ROOT_DIR)/kernel/linux-stable/arch/arm/boot/uImage
@@ -62,18 +63,31 @@ PFLASH_SIZE = 64
 PFLASH_SEC_COUNT:=128
 ROOT_IMAGE=$(ROOT_DIR)/ramdisk.img.uboot
 DTB_IMAGE=$(ROOT_DIR)/kernel/linux-stable/arch/arm/boot/dts/vexpress-v2p-ca9.dtb
+pflash:initrd
+	rm -rf $(PFLASH_IMG)
+	dd if=/dev/zero of=$(PFLASH_IMG) status=none bs=${PFLASH_BS}K count=$(PFLASH_SEC_COUNT)
+	dd if=$(KERNEL_IMAGE) of=$(PFLASH_IMG) status=none conv=notrunc bs=${PFLASH_BS}K
+	#seek=$((KRN_SIZE * 1024 / PFLASH_BS))=5*1024/512=10
+	dd if=$(ROOT_IMAGE) of=$(PFLASH_IMG) status=none conv=notrunc seek=10 bs=${PFLASH_BS}K
+	#seek=$(((KRN_SIZE+RDK_SIZE) * 1024 / PFLASH_BS))=(5+4)*1024/512=18
+	dd if=$(DTB_IMAGE) of=$(PFLASH_IMG) status=none conv=notrunc seek=18 bs=${PFLASH_BS}K
 
+initrd:
+	$(ROOT_DIR)/makeinitrd.sh 
+	mkimage -A arm -T ramdisk -C none -n 'Test Ramdisk Image' -d $(ROOT_DIR)/ramdisk.img $(ROOT_DIR)/ramdisk.img.uboot
 
-boot-uboot:
+boot:pflash
 	qemu-system-arm -M vexpress-a9 -m 128M -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(UBOOT_DIR)/u-boot -no-reboot \
-	-nographic 
+	-pflash ./pflash.img -nographic 
+	#qemu-system-arm -M vexpress-a9 -m 128M -net nic,model=lan9118 -net tap \
+	#-smp 1 -kernel $(UBOOT_DIR)/u-boot -no-reboot \
+	#-nographic 
 
-
-boot:
-	qemu-system-arm -M vexpress-a9 \
-	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage \
-	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb
+boot-kernel:
+	qemu-system-arm -M vexpress-a9 -m 128M -net nic,model=lan9118 -net tap \
+	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage -no-reboot \
+	 -nographic  -initrd $(ROOT_DIR)/ramdisk.img.gz
 
 clean:
 	@echo "clean"
