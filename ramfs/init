@@ -1,4 +1,4 @@
-#!/bin/busybox
+#!/bin/sh
 
 bb=/bin/busybox
 echo "build root filesystem"
