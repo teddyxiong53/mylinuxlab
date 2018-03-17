@@ -9,9 +9,9 @@ Usage:
         config kernel
     make busybox 
         compile busybox
-    make rootfs 
+    make ramfs 
         make rootfs image
-    make boot
+    sudo make boot
         run this system
         
         

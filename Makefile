@@ -1,7 +1,7 @@
 .PHONY: help uboot uboot-menuconfig uboot-defconfig \
 	kernel kernel-menuconfig kernel-defconfig \
 	busybox  boot clean  boot-uboot \
-	ramfs busybox-install
+	ramfs busybox-install kernel-debug
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -39,6 +39,10 @@ kernel-defconfig:
 kernel:
 	make -C $(KERNEL_DIR) uImage LOADADDR=$(KRN_ADDR) -j4
 
+kernel-debug:
+	qemu-system-arm -M vexpress-a9  -s -S \
+	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
+	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb 
 
 busybox-menuconfig:
 	make -C $(BUSYBOX_DIR) menuconfig
