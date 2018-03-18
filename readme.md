@@ -22,6 +22,14 @@ make kernel-defconfig
 make kernel
 ```
 
+内核还需要编译dtb文件。
+
+```
+make kernel-dtb
+```
+
+
+
 2、编译busybox。
 
 ```

@@ -2,7 +2,7 @@
 	kernel kernel-menuconfig kernel-defconfig \
 	busybox  boot clean  boot-uboot \
 	ramfs busybox-install kernel-debug kernel-modules \
-	user-modules user-modules-clean
+	user-modules user-modules-clean kernel-dtb
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -21,7 +21,7 @@ export ARCH CROSS_COMPILE ROOT_DIR KERNEL_DIR USER_MODULE_DIR
 default: help
 
 help:
-	cat help.txt
+	cat readme.md
 	@echo ""
     
 uboot-menuconfig:
@@ -47,6 +47,8 @@ kernel-debug:
 
 kernel-modules:
 	make -C $(KERNEL_DIR) modules -j4
+kernel-dtb:
+	make -C $(KERNEL_DIR) vexpress-v2p-ca9.dtb
 
 user-modules:
 	make -C $(USER_MODULE_DIR) modules
@@ -78,7 +80,8 @@ boot:
 	$(ROOT_DIR)/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
-	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb 
+	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+	-append "console=ttyAMA0 lpj=3805180"
 	
 
 
