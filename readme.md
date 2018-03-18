@@ -83,3 +83,24 @@ source .gdbinit
 
 3、然后就可以在第二个shell窗口里进行单步执行调试内核了。
 
+# 模块编译
+
+1、编译。
+
+```
+make user-modules 
+make user-modules-clean 
+```
+
+2、验证。
+
+```
+/mnt # cd mod/
+/mnt/mod # ls
+Makefile        hello.c         hello.mod.c     hello.o
+Module.symvers  hello.ko        hello.mod.o     modules.order
+/mnt/mod # insmod ./hello.ko
+hello: loading out-of-tree module taints kernel.
+hello module init
+```
+

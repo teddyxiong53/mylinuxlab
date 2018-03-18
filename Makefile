@@ -1,7 +1,8 @@
 .PHONY: help uboot uboot-menuconfig uboot-defconfig \
 	kernel kernel-menuconfig kernel-defconfig \
 	busybox  boot clean  boot-uboot \
-	ramfs busybox-install kernel-debug
+	ramfs busybox-install kernel-debug kernel-modules \
+	user-modules user-modules-clean
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -13,9 +14,9 @@ ROOT_DIR:=$(shell pwd)
 KERNEL_DIR:=$(ROOT_DIR)/kernel/linux-stable
 UBOOT_DIR:=$(ROOT_DIR)/uboot/u-boot
 BUSYBOX_DIR:=$(ROOT_DIR)/busybox/busybox-1.27.2
+USER_MODULE_DIR:=$(ROOT_DIR)/nfs/mod
 
-
-export ARCH CROSS_COMPILE
+export ARCH CROSS_COMPILE ROOT_DIR KERNEL_DIR USER_MODULE_DIR
 
 default: help
 
@@ -44,6 +45,13 @@ kernel-debug:
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb 
 
+kernel-modules:
+	make -C $(KERNEL_DIR) modules -j4
+
+user-modules:
+	make -C $(USER_MODULE_DIR) modules
+user-modules-clean:
+	make -C $(USER_MODULE_DIR) clean
 busybox-menuconfig:
 	make -C $(BUSYBOX_DIR) menuconfig
 
