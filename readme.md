@@ -37,16 +37,24 @@ make busybox-defconfig
 make busybox
 ```
 
-3、编译得到ramfs.gz
+3、编译得到rootfs
 
 ```
-make ramfs
+make rootfs
 ```
 
 4、运行。
 
+默认是从SD卡启动的。
+
 ```
 make boot
+```
+
+也可以从initramfs来中转一下。
+
+```
+make boot-ramfs
 ```
 
 

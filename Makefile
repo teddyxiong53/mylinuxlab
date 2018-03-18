@@ -2,7 +2,8 @@
 	kernel kernel-menuconfig kernel-defconfig \
 	busybox  boot clean  boot-uboot \
 	ramfs busybox-install kernel-debug kernel-modules \
-	user-modules user-modules-clean kernel-dtb
+	user-modules user-modules-clean kernel-dtb \
+	rootfs boot-ramfs
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -68,7 +69,9 @@ busybox-install:
 ramfs:
 	cd $(KERNEL_DIR); ./scripts/gen_initramfs_list.sh -o $(ROOT_DIR)/ramfs.gz $(ROOT_DIR)/ramfs;cd -
 
-
+rootfs:
+	$(ROOT_DIR)/makerootfs.sh
+	
 
 boot-uboot:
 	qemu-system-arm -M vexpress-a9 -m 128M -net nic,model=lan9118 -net tap \
@@ -76,14 +79,19 @@ boot-uboot:
 	-nographic 
 
 
+boot-ramfs:
+	$(ROOT_DIR)/ifconfig_tap0.sh &
+	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
+	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
+	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+	-append "console=ttyAMA0 lpj=3805180" -sd $(ROOT_DIR)/sd.img
+	
 boot:
 	$(ROOT_DIR)/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
-	-append "console=ttyAMA0 lpj=3805180"
-	
-
+	-append "console=ttyAMA0 root=/dev/mmcblk0 rootfstype=ext2" -sd $(ROOT_DIR)/sd.img
 
 
 clean:
