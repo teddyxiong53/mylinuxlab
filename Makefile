@@ -39,7 +39,7 @@ kernel-menuconfig:
 kernel-defconfig:
 	make -C $(KERNEL_DIR) vexpress_defconfig
 kernel:
-	make -C $(KERNEL_DIR) uImage LOADADDR=$(KRN_ADDR) -j4
+	make -C $(KERNEL_DIR) uImage LOADADDR=$(KRN_ADDR) -j256
 
 kernel-debug:
 	qemu-system-arm -M vexpress-a9  -s -S \
@@ -50,7 +50,7 @@ kernel-modules:
 	make -C $(KERNEL_DIR) modules -j4
 kernel-dtb:
 	make -C $(KERNEL_DIR) vexpress-v2p-ca9.dtb
-kerne-samples:kernel kernel-modules
+kernel-samples:kernel kernel-modules
 	$(ROOT_DIR)/cp_ko_to_nfs.sh
 	
 user-modules:
@@ -93,7 +93,7 @@ boot:
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
-	-append "console=ttyAMA0 root=/dev/mmcblk0 rootfstype=ext2" -sd $(ROOT_DIR)/sd.img
+	-append "console=ttyAMA0 loglevel=7 root=/dev/mmcblk0 rootfstype=ext2 rootwait rw" -sd $(ROOT_DIR)/sd.img
 
 
 clean:
