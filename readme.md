@@ -120,3 +120,15 @@ hello: loading out-of-tree module taints kernel.
 hello module init
 ```
 
+# 编译kernel的samples
+
+1、编译。
+
+```
+make kernel-samples
+```
+
+编译后，会自动拷贝到./nfs目录下。
+
+2、启动qemu，然后挂载nfs目录到/mnt目录下，就可以使用了。
+

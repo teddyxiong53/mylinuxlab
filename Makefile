@@ -3,7 +3,7 @@
 	busybox  boot clean  boot-uboot \
 	ramfs busybox-install kernel-debug kernel-modules \
 	user-modules user-modules-clean kernel-dtb \
-	rootfs boot-ramfs
+	rootfs boot-ramfs kernel-samples
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -50,7 +50,9 @@ kernel-modules:
 	make -C $(KERNEL_DIR) modules -j4
 kernel-dtb:
 	make -C $(KERNEL_DIR) vexpress-v2p-ca9.dtb
-
+kerne-samples:kernel kernel-modules
+	$(ROOT_DIR)/cp_ko_to_nfs.sh
+	
 user-modules:
 	make -C $(USER_MODULE_DIR) modules
 user-modules-clean:
