@@ -65,12 +65,17 @@ busybox-menuconfig:
 busybox-defconfig:
 	make -C $(BUSYBOX_DIR) defconfig
 busybox:
-	make -C $(BUSYBOX_DIR) -j4
+	if [ ! -d  $(BUSYBOX_DIR)/output ]; then mkdir $(BUSYBOX_DIR)/output; fi
+	make -C $(BUSYBOX_DIR) -j4 
 busybox-install:
 	make -C $(BUSYBOX_DIR) install CONFIG_PREFIX=$(ROOT_DIR)/ramfs
 
 busybox-replace:
 	$(ROOT_DIR)/script/busybox-replace.sh	
+
+busybox-clean:
+	make -C $(BUSYBOX_DIR) clean
+
 ramfs:
 	cd $(KERNEL_DIR); ./scripts/gen_initramfs_list.sh -o $(ROOT_DIR)/ramfs.gz $(ROOT_DIR)/ramfs;cd -
 
