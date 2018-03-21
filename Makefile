@@ -3,7 +3,8 @@
 	busybox  boot clean  boot-uboot \
 	ramfs busybox-install kernel-debug kernel-modules \
 	user-modules user-modules-clean kernel-dtb \
-	rootfs boot-ramfs kernel-samples
+	rootfs boot-ramfs kernel-samples \
+	busybox-replace
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -17,7 +18,8 @@ UBOOT_DIR:=$(ROOT_DIR)/uboot/u-boot
 BUSYBOX_DIR:=$(ROOT_DIR)/busybox/busybox-1.27.2
 USER_MODULE_DIR:=$(ROOT_DIR)/nfs/mod
 
-export ARCH CROSS_COMPILE ROOT_DIR KERNEL_DIR USER_MODULE_DIR
+export ARCH CROSS_COMPILE ROOT_DIR KERNEL_DIR USER_MODULE_DIR \
+	BUSYBOX_DIR
 
 default: help
 
@@ -51,7 +53,7 @@ kernel-modules:
 kernel-dtb:
 	make -C $(KERNEL_DIR) vexpress-v2p-ca9.dtb
 kernel-samples:kernel kernel-modules
-	$(ROOT_DIR)/cp_ko_to_nfs.sh
+	$(ROOT_DIR)/script/cp_ko_to_nfs.sh
 	
 user-modules:
 	make -C $(USER_MODULE_DIR) modules
@@ -67,12 +69,13 @@ busybox:
 busybox-install:
 	make -C $(BUSYBOX_DIR) install CONFIG_PREFIX=$(ROOT_DIR)/ramfs
 
-	
+busybox-replace:
+	$(ROOT_DIR)/script/busybox-replace.sh	
 ramfs:
 	cd $(KERNEL_DIR); ./scripts/gen_initramfs_list.sh -o $(ROOT_DIR)/ramfs.gz $(ROOT_DIR)/ramfs;cd -
 
 rootfs:
-	$(ROOT_DIR)/makerootfs.sh
+	$(ROOT_DIR)/script/makerootfs.sh
 	
 
 boot-uboot:
@@ -82,14 +85,14 @@ boot-uboot:
 
 
 boot-ramfs:
-	$(ROOT_DIR)/ifconfig_tap0.sh &
+	$(ROOT_DIR)/script/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
 	-append "console=ttyAMA0 lpj=3805180" -sd $(ROOT_DIR)/sd.img
 	
 boot:
-	$(ROOT_DIR)/ifconfig_tap0.sh &
+	$(ROOT_DIR)/script/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \

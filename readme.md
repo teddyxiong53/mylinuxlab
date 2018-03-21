@@ -132,3 +132,15 @@ make kernel-samples
 
 2、启动qemu，然后挂载nfs目录到/mnt目录下，就可以使用了。
 
+# 调试busybox的方法
+
+重新编译了busybox，但是不想要重新制作文件系统。因为sd.img里已经有些生成的内存不想被清空。
+
+加上了这个编译目标，可以直接把busybox的文件拷贝到sd.img里去。
+
+```
+make busybox-replace
+```
+
+
+
