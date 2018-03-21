@@ -1,0 +1,11 @@
+Package: helloworld 
+Version: 2018-03-21 
+Section: free 
+Priority: optional 
+Depends: libc.so 
+Suggests: libm.so 
+Architecture: arm 
+Installed-Size: 66666 
+Maintainer: teddyxiong53 @ 1073167306#qq.com
+Provides: teddyxiong53 
+Description: dpkg helloworld
