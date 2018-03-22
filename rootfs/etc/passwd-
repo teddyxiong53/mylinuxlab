@@ -1,3 +1,4 @@
 root::0:0:root:/:/bin/sh
 teddy:Vqj1rLdE/APjI:1000:1000:Linux User,,,:/home/teddy:/bin/sh
 xhliang:x:1001:1001:Linux User,,,:/home/xhliang:/bin/sh
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
