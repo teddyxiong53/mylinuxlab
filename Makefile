@@ -4,7 +4,7 @@
 	ramfs busybox-install kernel-debug kernel-modules \
 	user-modules user-modules-clean kernel-dtb \
 	rootfs boot-ramfs kernel-samples \
-	busybox-replace
+	busybox-replace boot-ui
 
 ARCH=arm
 CROSS_COMPILE=arm-linux-gnueabihf-
@@ -41,7 +41,7 @@ kernel-menuconfig:
 kernel-defconfig:
 	make -C $(KERNEL_DIR) vexpress_defconfig
 kernel:
-	make -C $(KERNEL_DIR) uImage LOADADDR=$(KRN_ADDR) -j256
+	make -C $(KERNEL_DIR) uImage LOADADDR=$(KRN_ADDR) -j4
 
 kernel-debug:
 	qemu-system-arm -M vexpress-a9  -s -S \
@@ -100,9 +100,15 @@ boot:
 	$(ROOT_DIR)/script/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
-	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
-	-append "console=ttyAMA0 loglevel=7 root=/dev/mmcblk0 rootfstype=ext2 rootwait rw" -sd $(ROOT_DIR)/sd.img
+	-nographic   -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw" -sd $(ROOT_DIR)/sd.img 
 
+boot-ui:
+	$(ROOT_DIR)/script/ifconfig_tap0.sh &
+	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
+	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  -serial stdio \
+	-dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
+	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw" -sd $(ROOT_DIR)/sd.img   -show-cursor
 
 clean:
 	@echo "clean"
