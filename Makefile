@@ -92,21 +92,21 @@ boot-uboot:
 boot-ramfs:
 	$(ROOT_DIR)/script/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
-	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
+	-smp 4 -m 1G -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
 	-append "console=ttyAMA0 lpj=3805180" -sd $(ROOT_DIR)/sd.img
 	
 boot:
 	$(ROOT_DIR)/script/ifconfig_tap0.sh &
-	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
-	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
+	qemu-system-arm -M vexpress-a9 -m 1G -net nic,model=lan9118 -net tap \
+	-smp 4 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic   -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
-	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw" -sd $(ROOT_DIR)/sd.img 
+	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw " -sd $(ROOT_DIR)/sd.img 
 
 boot-ui:
 	$(ROOT_DIR)/script/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -net nic,model=lan9118 -net tap \
-	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  -serial stdio \
+	-smp 4 -m 1G -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  -serial stdio \
 	-dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
 	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw" -sd $(ROOT_DIR)/sd.img   -show-cursor
 
