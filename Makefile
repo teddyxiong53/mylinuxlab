@@ -13,9 +13,9 @@ KRN_ADDR=0x60003000
 
 #define dir
 ROOT_DIR:=$(shell pwd)
-KERNEL_DIR:=$(ROOT_DIR)/kernel/linux-stable
-UBOOT_DIR:=$(ROOT_DIR)/uboot/u-boot
-BUSYBOX_DIR:=$(ROOT_DIR)/busybox/busybox-1.27.2
+KERNEL_DIR:=$(ROOT_DIR)/kernel/linux-6.0
+UBOOT_DIR:=$(ROOT_DIR)/uboot/u-boot-2022.10
+BUSYBOX_DIR:=$(ROOT_DIR)/busybox/busybox-1_35_0
 USER_MODULE_DIR:=$(ROOT_DIR)/nfs/mod
 
 export ARCH CROSS_COMPILE ROOT_DIR KERNEL_DIR USER_MODULE_DIR \
@@ -26,7 +26,29 @@ default: help
 help:
 	cat readme.md
 	@echo ""
-    
+
+download_code:
+	# download linux
+	if [ ! -e $(ROOT_DIR)/kernel/linux-6.0.zip ]; then \
+		cd $(ROOT_DIR)/kernel/; \
+		wget https://github.com/torvalds/linux/archive/refs/tags/v6.0.zip -O linux-6.0.zip; \
+		unzip linux-6.0.zip; \
+		cd -; \
+	fi
+	# download u-boot
+	if [ ! -e $(ROOT_DIR)/uboot/u-boot-2022.10.zip ]; then \
+		cd $(ROOT_DIR)/uboot/; \
+		wget https://github.com/u-boot/u-boot/archive/refs/tags/v2022.10.zip -O u-boot-2022.10.zip; \
+		unzip u-boot-2022.10.zip; \
+		cd -; \
+	fi
+	# download busybox
+	if [ ! -e $(ROOT_DIR)/busybox/busybox-1_35_0.zip ]; then \
+		cd $(ROOT_DIR)/busybox/; \
+		wget https://github.com/mirror/busybox/archive/refs/tags/1_35_0.zip -O busybox-1_35_0.zip; \
+		unzip busybox-1_35_0.zip; \
+		cd -; \
+	fi
 uboot-menuconfig:
 	make -C $(UBOOT_DIR) menuconfig
 
@@ -46,7 +68,7 @@ kernel:
 kernel-debug:
 	qemu-system-arm -M vexpress-a9  -s -S \
 	-smp 1 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
-	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb 
+	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb
 
 kernel-modules:
 	make -C $(KERNEL_DIR) modules -j4
@@ -54,7 +76,7 @@ kernel-dtb:
 	make -C $(KERNEL_DIR) vexpress-v2p-ca9.dtb
 kernel-samples:kernel kernel-modules
 	$(ROOT_DIR)/script/cp_ko_to_nfs.sh
-	
+
 user-modules:
 	make -C $(USER_MODULE_DIR) modules
 user-modules-clean:
@@ -66,12 +88,12 @@ busybox-defconfig:
 	make -C $(BUSYBOX_DIR) defconfig
 busybox:
 	if [ ! -d  $(BUSYBOX_DIR)/output ]; then mkdir $(BUSYBOX_DIR)/output; fi
-	make -C $(BUSYBOX_DIR) -j4 
+	make -C $(BUSYBOX_DIR) -j4
 busybox-install:
 	make -C $(BUSYBOX_DIR) install CONFIG_PREFIX=$(ROOT_DIR)/ramfs
 
 busybox-replace:
-	$(ROOT_DIR)/script/busybox-replace.sh	
+	$(ROOT_DIR)/script/busybox-replace.sh
 
 busybox-clean:
 	make -C $(BUSYBOX_DIR) clean
@@ -81,12 +103,12 @@ ramfs:
 
 rootfs:
 	$(ROOT_DIR)/script/makerootfs.sh
-	
+
 
 boot-uboot:
 	qemu-system-arm -M vexpress-a9 -m 128M -net nic,model=lan9118 -net tap \
 	-smp 1 -kernel $(UBOOT_DIR)/u-boot -no-reboot \
-	-nographic 
+	-nographic
 
 
 boot-ramfs:
@@ -95,13 +117,13 @@ boot-ramfs:
 	-smp 4 -m 1G -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic  -initrd $(ROOT_DIR)/ramfs.gz -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
 	-append "console=ttyAMA0 lpj=3805180" -sd $(ROOT_DIR)/sd.img
-	
+
 boot:
 	$(ROOT_DIR)/script/ifconfig_tap0.sh &
 	qemu-system-arm -M vexpress-a9 -m 1G -net nic,model=lan9118 -net tap \
 	-smp 4 -kernel $(KERNEL_DIR)/arch/arm/boot/zImage  \
 	-nographic   -dtb $(KERNEL_DIR)/arch/arm/boot/dts/vexpress-v2p-ca9.dtb \
-	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw " -sd $(ROOT_DIR)/sd.img 
+	-append "console=ttyAMA0  root=/dev/mmcblk0 rootfstype=ext2 rootwait rw " -sd $(ROOT_DIR)/sd.img
 
 boot-ui:
 	$(ROOT_DIR)/script/ifconfig_tap0.sh &

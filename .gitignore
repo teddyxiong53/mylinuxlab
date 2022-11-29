@@ -1,0 +1,4 @@
+*.zip
+kernel/linux*
+busybox/busybox*
+uboot/u-boot*
